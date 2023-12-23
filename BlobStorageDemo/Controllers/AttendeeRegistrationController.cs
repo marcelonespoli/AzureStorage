@@ -9,20 +9,21 @@ namespace BlobStorageDemo.Controllers
     public class AttendeeRegistrationController : Controller
     {
         private readonly ITableStorageService _tableStorageService;
+        private readonly IBlobStorageService _blobStorageService;
 
-        public AttendeeRegistrationController(ITableStorageService tableStorageService)
+        public AttendeeRegistrationController(ITableStorageService tableStorageService,
+            IBlobStorageService blobStorageService)
         {
             _tableStorageService = tableStorageService;
+            _blobStorageService = blobStorageService;
         }
 
         // GET: AttendeeRegistrationController
         public async Task<ActionResult> Index()
         {
             var data = await _tableStorageService.GetAttendees();
-            //foreach (var item in data)
-            //{
-            //    item.ImageName = await _blobStorageService.GetBlobUrl(item.ImageName);
-            //}
+            foreach (var item in data)
+                 item.ImageName = await _blobStorageService.GetBlobUrl(item.ImageName);
             return View(data);
         }
 
@@ -30,7 +31,7 @@ namespace BlobStorageDemo.Controllers
         public async Task<ActionResult> Details(string id, string industry)
         {
             var data = await _tableStorageService.GetAttendee(industry, id);
-            //data.ImageName = await _blobStorageService.GetBlobUrl(data.ImageName);
+            data.ImageName = await _blobStorageService.GetBlobUrl(data.ImageName);
             return View(data);
         }
 
@@ -52,15 +53,10 @@ namespace BlobStorageDemo.Controllers
                 attendeeEntity.PartitionKey = attendeeEntity.Industry;
                 attendeeEntity.RowKey = id;
 
-                //if (formFile?.Length > 0)
-                //{
-                //    attendeeEntity.ImageName =
-                //        await _blobStorageService.UploadBlob(formFile, id);
-                //}
-                //else
-                //{
-                //    attendeeEntity.ImageName = "default.jpg";
-                //}
+                if (formFile?.Length > 0)
+                    attendeeEntity.ImageName =  await _blobStorageService.UploadBlob(formFile, id);
+                else
+                    attendeeEntity.ImageName = "default.jpg";
 
                 await _tableStorageService.UpsertAttendee(attendeeEntity);
 
@@ -98,13 +94,9 @@ namespace BlobStorageDemo.Controllers
         {
             try
             {
-                //if (formFile?.Length > 0)
-                //{
-                //    attendeeEntity.ImageName = await _blobStorageService.UploadBlob(formFile, attendeeEntity.RowKey, attendeeEntity.ImageName);
-                //}
-
+                if (formFile?.Length > 0)
+                    attendeeEntity.ImageName = await _blobStorageService.UploadBlob(formFile, attendeeEntity.RowKey, attendeeEntity.ImageName);               
                 attendeeEntity.PartitionKey = attendeeEntity.Industry;
-
                 await _tableStorageService.UpsertAttendee(attendeeEntity);
 
                 //var email = new EmailMessage
@@ -139,7 +131,7 @@ namespace BlobStorageDemo.Controllers
             {
                 var data = await _tableStorageService.GetAttendee(industry, id);
                 await _tableStorageService.DeleteAttendee(industry, id);
-                //await _blobStorageService.RemoveBlob(data.ImageName);
+                await _blobStorageService.RemoveBlob(data.ImageName);
 
                 //var email = new EmailMessage
                 //{

@@ -9,6 +9,7 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddAzureClients(azBuilder =>
 {
+    azBuilder.AddBlobServiceClient(storageConnectionString);
     azBuilder.AddTableServiceClient(storageConnectionString);
 });
 builder.Services.AddAzureClients(azBuilder =>
@@ -21,6 +22,7 @@ builder.Services.AddAzureClients(azBuilder =>
 });
 
 builder.Services.AddScoped<ITableStorageService, TableStorageService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
 
 var app = builder.Build();
