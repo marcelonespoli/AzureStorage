@@ -1,5 +1,4 @@
-# AzureStorage
-Cloud development project with Azure Storage: Blob Container, Tables, and Queues
+# Web Application project with Azure Storage: Blob Container, Tables, and Queues
 
 This project was built with:
 A simple CRUD to record data in Storage Tables and it will save an avatar image in a Blob Container.
