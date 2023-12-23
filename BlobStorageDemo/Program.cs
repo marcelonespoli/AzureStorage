@@ -1,4 +1,5 @@
 using Azure.Data.Tables;
+using Azure.Storage.Queues;
 using BlobStorageDemo.Services;
 using Microsoft.Extensions.Azure;
 
@@ -11,6 +12,11 @@ builder.Services.AddAzureClients(azBuilder =>
 {
     azBuilder.AddBlobServiceClient(storageConnectionString);
     azBuilder.AddTableServiceClient(storageConnectionString);
+    azBuilder.AddQueueServiceClient(storageConnectionString)
+    .ConfigureOptions(c =>
+    {
+        c.MessageEncoding = QueueMessageEncoding.Base64;
+    });
 });
 builder.Services.AddAzureClients(azBuilder =>
 {
@@ -19,10 +25,20 @@ builder.Services.AddAzureClients(azBuilder =>
         return new TableClient(storageConnectionString,
                 builder.Configuration["AzureStorage:TableStorage"]);
     });
+    azBuilder.AddClient<QueueClient, QueueClientOptions>((_, _, _) =>
+    {
+        return new QueueClient(storageConnectionString,
+                builder.Configuration["AzureStorage:QueueName"],
+                new QueueClientOptions
+                {
+                    MessageEncoding = QueueMessageEncoding.Base64
+                });
+    });
 });
 
 builder.Services.AddScoped<ITableStorageService, TableStorageService>();
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+builder.Services.AddScoped<IQueueService, QueueService>();
 
 
 var app = builder.Build();
